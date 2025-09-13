@@ -1,4 +1,4 @@
-package net.byteboost.Junipy;
+package net.byteboost.junipy;
 
 import io.github.cdimascio.dotenv.Dotenv;
 import org.springframework.context.ApplicationContextInitializer;
