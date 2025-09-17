@@ -1,8 +1,5 @@
 package net.byteboost.junipy.controller;
 
-import net.byteboost.junipy.dto.LoginRequest;
-import net.byteboost.junipy.dto.RegisterRequest;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import net.byteboost.junipy.model.User;
 import net.byteboost.junipy.service.IUserService;
@@ -21,5 +18,8 @@ public class UserController {
 
     @GetMapping
     public List<User> all() { return userService.getAllUsers(); }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) { userService.deleteUser(id); }
 
 }
