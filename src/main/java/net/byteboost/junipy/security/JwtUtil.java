@@ -13,9 +13,10 @@ public class JwtUtil {
     private final String SECRET = dotenv.get("JWT_SECRET"); 
     private final long EXPIRATION = Long.parseLong(dotenv.get("JWT_EXPIRATION_MS"));
 
-    public String generateToken(String email) {
+    public String generateToken(String email, String role) {
         return Jwts.builder()
                 .setSubject(email)
+                .claim("role", role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + EXPIRATION))
                 .signWith(SignatureAlgorithm.HS256, SECRET)
