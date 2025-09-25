@@ -13,10 +13,8 @@ import org.springframework.web.bind.annotation.RestController;
 import net.byteboost.junipy.dto.LoginRequest;
 import net.byteboost.junipy.dto.RegisterRequest;
 import net.byteboost.junipy.model.User;
-import net.byteboost.junipy.repository.UserRepository;
 import net.byteboost.junipy.security.JwtUtil;
 import net.byteboost.junipy.service.IUserService;
-import net.byteboost.junipy.service.UserService;
 
 @RestController
 @RequestMapping("/auth")

@@ -2,7 +2,6 @@ package net.byteboost.junipy.service;
 
 import net.byteboost.junipy.model.User;
 import net.byteboost.junipy.repository.UserRepository;
-import net.byteboost.junipy.service.IUserService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
