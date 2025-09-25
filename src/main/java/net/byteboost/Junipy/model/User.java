@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import net.byteboost.junipy.dto.RoleEnum;
+
 @Document(collection = "users")
 public class User {
     @Id
@@ -16,6 +18,8 @@ public class User {
     private String email;
 
     private String password;
+
+    private RoleEnum role = RoleEnum.USER;
 
     public User() {}
 
@@ -36,4 +40,7 @@ public class User {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public RoleEnum getRole() { return role; }
+    public void setRole(RoleEnum role) { this.role = role; }
 }
