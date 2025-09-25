@@ -20,7 +20,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
+            .authorizeHttpRequests(auth -> auth    
                 .requestMatchers(
                     "/auth/**",
                     "/swagger-ui.html",
@@ -31,6 +31,7 @@ public class SecurityConfig {
                     "/ws/chat/**",
                     "/webjars/**"
                     ).permitAll()
+                .requestMatchers("/user/**").hasAuthority("ADMIN")
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .build();
