@@ -19,7 +19,7 @@ import net.byteboost.junipy.dto.ChatMessage;
 
 @Controller
 public class ChatController {
-    private final String aiUrl = Dotenv.load().get("SERVICE_AI_URL");
+    private final String aiUrl = Dotenv.load().get("AI_SERVER_URL");
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
 
