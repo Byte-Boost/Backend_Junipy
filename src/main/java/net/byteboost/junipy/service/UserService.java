@@ -1,6 +1,8 @@
 package net.byteboost.junipy.service;
 
 import net.byteboost.junipy.model.User;
+import net.byteboost.junipy.model.UserProfile;
+import net.byteboost.junipy.repository.UserProfileRepository;
 import net.byteboost.junipy.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
@@ -10,9 +12,11 @@ import java.util.List;
 public class UserService implements IUserService {
 
     private final UserRepository userRepository;
+    private final UserProfileRepository userProfileRepository;
 
-    public UserService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository, UserProfileRepository userProfileRepository) {
         this.userRepository = userRepository;
+        this.userProfileRepository = userProfileRepository;
     }
 
     @Override
@@ -44,5 +48,20 @@ public class UserService implements IUserService {
     @Override
     public User getUserByEmail(String email) {
         return userRepository.findByEmail(email);
+    }
+
+    @Override
+    public UserProfile getUserProfile(String userId){
+        return userProfileRepository.findByUserId(userId);
+    }
+
+    @Override
+    public UserProfile upsertUserProfile(String userId, UserProfile profile){
+        UserProfile existingProfile = userProfileRepository.findByUserId(userId);
+        if(existingProfile != null){
+            profile.setId(existingProfile.getId());
+        }
+        profile.setUserId(userId);
+        return userProfileRepository.save(profile);
     }
 }

@@ -42,7 +42,7 @@ public class AuthController {
         if (user == null || !passwordEncoder.matches(req.getPassword(), user.getPassword()))
             return ResponseEntity.status(401).body("Invalid credentials");
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(user);
         return ResponseEntity.ok(Map.of("token", token));
     }
 }
