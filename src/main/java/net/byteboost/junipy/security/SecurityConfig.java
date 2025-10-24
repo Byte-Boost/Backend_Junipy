@@ -33,7 +33,9 @@ public class SecurityConfig {
                     "/webjars/**"
                     ).permitAll()
                 .requestMatchers(HttpMethod.GET, "/user").hasAuthority("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/user").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/user/*").hasAuthority("ADMIN")
+                .requestMatchers(HttpMethod.PATCH, "/user/setNutritionist/*").hasAuthority("ADMIN")
+                .requestMatchers("/nutritionist/**").hasAnyAuthority("NUTRITIONIST", "ADMIN")
                 .anyRequest().authenticated())
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
             .build();

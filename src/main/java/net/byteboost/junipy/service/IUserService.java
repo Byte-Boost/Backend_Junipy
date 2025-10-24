@@ -1,7 +1,6 @@
 package net.byteboost.junipy.service;
 
 import net.byteboost.junipy.model.User;
-import net.byteboost.junipy.model.UserDailyDiet;
 import net.byteboost.junipy.model.UserProfile;
 
 import java.util.List;
@@ -13,10 +12,8 @@ public interface IUserService {
     User createUser(User user);
     User updateUser(String id, User user);
     void deleteUser(String id);
+    void setUserAsNutritionist(String id);
 
     UserProfile getUserProfile(String userId);
     UserProfile upsertUserProfile(String userId, UserProfile profile);
-
-    UserDailyDiet createUserDailyDiet(String userId, UserDailyDiet diet);
-    List<UserDailyDiet> getUserDailyDiet(String userId);
 }
