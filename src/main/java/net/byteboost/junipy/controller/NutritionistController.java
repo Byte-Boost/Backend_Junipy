@@ -5,7 +5,9 @@ import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import net.byteboost.junipy.dto.ReviewStatusEnum;
+import net.byteboost.junipy.dto.UserDietAnalysisSendDto;
 import net.byteboost.junipy.model.UserDietAnalysis;
 import net.byteboost.junipy.security.JwtUtil;
 import net.byteboost.junipy.service.IDietService;
@@ -30,7 +32,7 @@ public class NutritionistController {
     }
     
     @PostMapping("/diet-analyses/{dietId}/submit")
-    public ResponseEntity<?> submitDietAnalysis(@RequestHeader("Authorization") String authHeader, @PathVariable String dietId, @RequestBody UserDietAnalysis analysis) {
+    public ResponseEntity<?> submitDietAnalysis(@RequestHeader("Authorization") String authHeader, @PathVariable String dietId, @Valid @RequestBody UserDietAnalysisSendDto analysis) {
         String jwtoken = authHeader.replace("Bearer ", "");
         String userId = jwtUtils.extractUserId(jwtoken);
         try{

@@ -1,13 +1,14 @@
 package net.byteboost.junipy.service;
 
 import net.byteboost.junipy.dto.ReviewStatusEnum;
+import net.byteboost.junipy.dto.UserDailyDietCreateDto;
 import net.byteboost.junipy.model.UserDailyDiet;
 import net.byteboost.junipy.model.UserDietAnalysis;
 
 import java.util.List;
 
 public interface IDietService {
-    UserDailyDiet createUserDailyDiet(String userId, UserDailyDiet diet);
+    UserDailyDiet createUserDailyDiet(String userId, UserDailyDietCreateDto diet);
     List<UserDailyDiet> getUserDailyDiet(String userId);
 
     UserDietAnalysis getUserDietAnalysis(String dietId);

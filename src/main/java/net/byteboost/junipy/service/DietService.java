@@ -1,6 +1,7 @@
 package net.byteboost.junipy.service;
 
 import net.byteboost.junipy.dto.ReviewStatusEnum;
+import net.byteboost.junipy.dto.UserDailyDietCreateDto;
 import net.byteboost.junipy.model.User;
 import net.byteboost.junipy.model.UserDailyDiet;
 import net.byteboost.junipy.model.UserDietAnalysis;
@@ -29,13 +30,20 @@ public class DietService implements IDietService {
     }
 
     @Override
-    public UserDailyDiet createUserDailyDiet(String userId, UserDailyDiet diet) {
+    public UserDailyDiet createUserDailyDiet(String userId, UserDailyDietCreateDto diet) {
         diet.setUserId(userId);
         UserDailyDiet existingDiet = userDailyDietRepository.findByUserIdAndDayOfWeek(userId, diet.getDayOfWeek());
+        
         if (existingDiet != null) {
-            diet.setId(existingDiet.getId());
+            existingDiet.setMarkdownDiet(diet.getMarkdownDiet());
+            return userDailyDietRepository.save(existingDiet);
+        } else {
+            UserDailyDiet newDiet = new UserDailyDiet();
+            newDiet.setUserId(diet.getUserId());
+            newDiet.setDayOfWeek(diet.getDayOfWeek());
+            newDiet.setMarkdownDiet(diet.getMarkdownDiet());
+            return userDailyDietRepository.save(newDiet);
         }
-        return userDailyDietRepository.save(diet);
     }
     
     @Override

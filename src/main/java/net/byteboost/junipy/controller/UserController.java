@@ -2,6 +2,9 @@ package net.byteboost.junipy.controller;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+
+import jakarta.validation.Valid;
+import net.byteboost.junipy.dto.UserDailyDietCreateDto;
 import net.byteboost.junipy.model.User;
 import net.byteboost.junipy.model.UserDailyDiet;
 import net.byteboost.junipy.model.UserDietAnalysis;
@@ -56,7 +59,7 @@ public class UserController {
     }
 
     @PostMapping("/daily-diet")
-    public ResponseEntity<Void> logDailyDiet(@RequestHeader("Authorization") String authHeader, @RequestBody UserDailyDiet dailyDiet) {
+    public ResponseEntity<Void> logDailyDiet(@RequestHeader("Authorization") String authHeader, @Valid @RequestBody UserDailyDietCreateDto dailyDiet) {
         String jwtoken = authHeader.replace("Bearer ", "");
         String userId = jwtUtils.extractUserId(jwtoken);
         dietService.createUserDailyDiet(userId, dailyDiet);
