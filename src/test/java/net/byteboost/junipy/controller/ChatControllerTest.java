@@ -9,7 +9,7 @@ class ChatControllerTest {
     @Test
     void handleChat_shouldEchoMessage() {
         ChatController controller = new ChatController();
-        ChatMessage input = new ChatMessage("user", "Hello!");
+        ChatMessage input = new ChatMessage("user", "Hello!", null);
         ChatMessage result = controller.handleChat(input);
 
         assertNotNull(result);
