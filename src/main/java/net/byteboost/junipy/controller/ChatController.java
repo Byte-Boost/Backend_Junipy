@@ -7,6 +7,7 @@ import java.net.http.HttpResponse;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Controller;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -18,6 +19,8 @@ import io.github.cdimascio.dotenv.Dotenv;
 import net.byteboost.junipy.dto.ChatMessage;
 import net.byteboost.junipy.model.ChatMessageDocument;
 import net.byteboost.junipy.repository.ChatMessageRepository;
+import net.byteboost.junipy.security.JwtUtil;
+import net.byteboost.junipy.service.UserService;
 
 
 @Controller
@@ -26,18 +29,26 @@ public class ChatController {
     private final HttpClient client = HttpClient.newHttpClient();
     private final ObjectMapper objectMapper = new ObjectMapper();
     private ChatMessageRepository messageRepository;
-
+    private JwtUtil jwtUtil;
     public ChatController() {}
 
     @Autowired
-    public ChatController(ChatMessageRepository messageRepository) {
+    public ChatController(ChatMessageRepository messageRepository, JwtUtil jwtUtil) {
         this.messageRepository = messageRepository;
+        this.jwtUtil = jwtUtil;
     }
-
+    @Autowired
+    private UserService userService;
     @MessageMapping("/chat")
     @SendTo("/topic/chat")
     public ChatMessage handleChat(ChatMessage message) {
-        try {
+          try {
+                String token = message.getToken();
+
+                token = token.replace("Bearer ", "");
+                System.out.println("Token retrieved: " + token);
+                String userId = jwtUtil.extractUserId(token);
+
             try {
                 if (messageRepository != null) {
                     ChatMessageDocument userDoc = new ChatMessageDocument(
@@ -45,7 +56,7 @@ public class ChatController {
                         message.getMessage(),
                         null,
                         null,
-                        message.getUserId(),
+                        userId,
                         message.getChatId()
                     );
                     messageRepository.save(userDoc);
@@ -56,8 +67,11 @@ public class ChatController {
 
             ObjectNode node = objectMapper.createObjectNode();
             node.put("prompt", message.getMessage());
+            node.put("userId", userId);
+            node.put("chatId", message.getChatId());
+            node.putPOJO("userInfo", userService.getUserProfile(userId) != null ? userService.getUserProfile(userId) : new ObjectNode(objectMapper.getNodeFactory()));
             String body = objectMapper.writeValueAsString(node);
-
+            System.out.println(body);
         HttpRequest request = HttpRequest.newBuilder()
             .uri(URI.create(aiUrl + "/chat"))
             .version(HttpClient.Version.HTTP_1_1) 
