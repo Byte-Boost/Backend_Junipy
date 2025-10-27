@@ -4,6 +4,8 @@ import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import jakarta.validation.constraints.NotBlank;
+
 import java.util.List;
 
 @Document(collection = "user_profiles")
@@ -14,29 +16,48 @@ public class UserProfile {
     @Indexed(unique = true)
     private String userId;
 
+    @NotBlank
     private String birthDate;
-    private String gender;
+    @NotBlank
+    private String sex;
+    @NotBlank
     private String occupation;
+    @NotBlank
     private String consultationReason;
 
+    @NotBlank
     private List<String> healthConditions;
+    @NotBlank
     private List<String> allergies;
+    @NotBlank
     private List<String> surgeries;
 
+    @NotBlank
     private String activityType;
+    @NotBlank
     private String activityFrequency;
+    @NotBlank
     private String activityDuration;
 
+    @NotBlank
     private String sleepQuality;
+    @NotBlank
     private String wakeDuringNight;
+    @NotBlank
     private String bowelFrequency;
+    @NotBlank
     private String stressLevel;
 
+    @NotBlank
     private String alcoholConsumption;
+    @NotBlank
     private String smoking;
+    @NotBlank
     private String hydrationLevel;
 
+    @NotBlank
     private String takesMedication;
+    @NotBlank
     private String medicationDetails;
 
     public UserProfile() {}
@@ -54,8 +75,8 @@ public class UserProfile {
     public String getBirthDate() { return birthDate; }
     public void setBirthDate(String birthDate) { this.birthDate = birthDate; }
 
-    public String getGender() { return gender; }
-    public void setGender(String gender) { this.gender = gender; }
+    public String getSex() { return sex; }
+    public void setSex(String sex) { this.sex = sex; }
 
     public String getOccupation() { return occupation; }
     public void setOccupation(String occupation) { this.occupation = occupation; }
