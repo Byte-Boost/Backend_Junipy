@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.validation.Valid;
 import net.byteboost.junipy.dto.LoginRequest;
 import net.byteboost.junipy.dto.RegisterRequest;
 import net.byteboost.junipy.model.User;
@@ -24,7 +25,7 @@ public class AuthController {
     @Autowired private JwtUtil jwtUtil;
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody RegisterRequest req) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterRequest req) {
         if (userService.getUserByEmail(req.getEmail()) != null)
             return ResponseEntity.badRequest().body("Email in use");
 
@@ -33,16 +34,17 @@ public class AuthController {
 
         User user = new User(req.getUsername(), req.getEmail(), passwordEncoder.encode(req.getPassword()));
         userService.createUser(user);
+        userService.upsertUserProfile(user.getId(), req.getUserProfile());
         return ResponseEntity.ok("Registered");
     }
 
     @PostMapping("/login")
-    public ResponseEntity<?> login(@RequestBody LoginRequest req) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequest req) {
         User user = userService.getUserByEmail(req.getEmail());
         if (user == null || !passwordEncoder.matches(req.getPassword(), user.getPassword()))
             return ResponseEntity.status(401).body("Invalid credentials");
 
-        String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name());
+        String token = jwtUtil.generateToken(user);
         return ResponseEntity.ok(Map.of("token", token));
     }
 }
