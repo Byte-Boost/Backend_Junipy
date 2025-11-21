@@ -1,90 +1,60 @@
 package net.byteboost.junipy.controller;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.sql.Time;
-import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.stereotype.Controller;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import io.github.cdimascio.dotenv.Dotenv;
-import net.byteboost.junipy.dto.ChatMessage;
-import net.byteboost.junipy.model.ChatHistory;
-import net.byteboost.junipy.repository.ChatHistoryRepository;
-import net.byteboost.junipy.repository.UserProfileRepository;
+import net.byteboost.junipy.model.Chat;
 import net.byteboost.junipy.security.JwtUtil;
+import net.byteboost.junipy.service.IChatService;
 
-
-@Controller
+@RestController
+@RequestMapping("/chat")
 public class ChatController {
-    private final String aiUrl = Dotenv.load().get("AI_SERVER_URL");
-    private final HttpClient client = HttpClient.newHttpClient();
-    private final ObjectMapper objectMapper = new ObjectMapper();
-    private final ChatHistoryRepository chatHistoryRepository;
-    private final UserProfileRepository userProfileRepository;
     private JwtUtil jwtUtils;
-    public ChatController(ChatHistoryRepository chatHistoryRepository, JwtUtil jwtUtils,UserProfileRepository userProfileRepository) {
-        this.chatHistoryRepository = chatHistoryRepository;
+    private final IChatService chatService;
+
+    public ChatController(IChatService chatService, JwtUtil jwtUtils) {
+        this.chatService = chatService;
         this.jwtUtils = jwtUtils;
-        this.userProfileRepository = userProfileRepository;
     }
 
-    @MessageMapping("/chat")
-    @SendTo("/topic/chat")
-    public ChatMessage handleChat(ChatMessage message, @RequestHeader("Authorization") String authHeader) {
-        try {
-            ObjectNode node = objectMapper.createObjectNode();
-            node.put("prompt", message.getMessage());
-            JsonNode authJson = objectMapper.readTree(authHeader);
-            System.err.println(authJson.get("token").asText());
-            String jwtoken = authJson.get("token").asText();
-            String userId = jwtUtils.extractUserId(jwtoken);
-            
-            node.put("userID", userId);
-            node.put("chatID", "");
-            List<ChatHistory> userHistory = chatHistoryRepository.findAllByUserId(userId);
-            node.set("userHistory", objectMapper.valueToTree(userHistory));
+    @GetMapping
+    public ResponseEntity<List<Chat>> all() {return ResponseEntity.ok(chatService.getAllChats());}
 
-            node.set("userInfo",  objectMapper.valueToTree(userProfileRepository.findByUserId(userId)));
-            
-            String body = objectMapper.writeValueAsString(node);
-            System.out.println("Request Body: " + body);
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        chatService.deleteChat(id); 
+        return ResponseEntity.noContent().build();
+    }
 
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(aiUrl + "/chat"))
-            .version(HttpClient.Version.HTTP_1_1) 
-            .POST(HttpRequest.BodyPublishers.ofString(body))
-            .header("Content-Type", "application/json")
-            .build();
-            
-            HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            String responseBody = httpResponse.body();
-            
-            JsonNode json = objectMapper.readTree(responseBody);
-            System.out.println("Response Body: " + responseBody);
-            String reply = json.has("response") ? json.get("response").asText() : "Error contacting Junipy verify your internet connection";
-            String chatId = json.has("chatID") ? json.get("chatID").asText() : null;
+    @PostMapping
+    public ResponseEntity<Chat> postChat(@RequestHeader("Authorization") String authHeader) {
+        String jwtToken = authHeader.replace("Bearer ", "");
+        String userId = jwtUtils.extractUserId(jwtToken);
+        Chat newChat = chatService.createChat(userId);
+        return ResponseEntity.status(201).body(newChat);
+    }
 
+    @PatchMapping("/{id}")
+    public ResponseEntity<Chat> updateChat(@PathVariable String id, @RequestBody Chat chat) {
+        Chat updatedChat = chatService.updateChat(id, chat);
+        return ResponseEntity.ok(updatedChat);
+    }
 
-            ChatHistory chatHistory = new ChatHistory(userId, chatId, message.getMessage(), reply, LocalDateTime.now().toString());
-            chatHistoryRepository.save(chatHistory);
-            return new ChatMessage("assistant", reply, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ChatMessage("assistant", null, "Error contacting Junipy: " + e.getMessage());
-        }
+    @GetMapping("/user-chats")
+    public ResponseEntity<List<Chat>> getChatsByUserId(@RequestHeader("Authorization") String authHeader) {
+        String jwtToken = authHeader.replace("Bearer ", "");
+        String userId = jwtUtils.extractUserId(jwtToken);
+        List<Chat> chats = chatService.getChatsByUserId(userId);
+        return ResponseEntity.ok(chats);
     }
 }

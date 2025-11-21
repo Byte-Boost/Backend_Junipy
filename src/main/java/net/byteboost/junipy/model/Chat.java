@@ -1,5 +1,6 @@
 package net.byteboost.junipy.model;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.data.annotation.Id;
@@ -12,9 +13,11 @@ public class Chat {
     
     private List<Message> messages;
     
-    public Chat(String id, List<Message> messages) {
-        this.id = id;
-        this.messages = messages;
+    private String userId;
+    
+    public Chat(String userId) {
+        this.messages = new ArrayList<Message>();
+        this.userId = userId;
     }
     
     public String getId() {
@@ -31,5 +34,13 @@ public class Chat {
 
     public void setMessages(List<Message> messages) {
         this.messages = messages;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+    
+    public void setUserId(String userId) {
+        this.userId = userId;
     }
 }

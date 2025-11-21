@@ -1,5 +1,7 @@
 package net.byteboost.junipy.model;
 
+import java.sql.Date;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -11,11 +13,10 @@ public class Message {
     private String message;
     private String timestamp;
 
-    public Message(String id, String senderId, String message, String timestamp) {
-        this.id = id;
+    public Message(String senderId, String message) {
         this.senderId = senderId;
         this.message = message;
-        this.timestamp = timestamp;
+        this.timestamp = new Date(System.currentTimeMillis()).toString();
     }
     public String getId() {
         return id;
