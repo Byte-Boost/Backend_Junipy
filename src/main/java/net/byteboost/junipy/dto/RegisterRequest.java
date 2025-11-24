@@ -3,18 +3,10 @@ package net.byteboost.junipy.dto;
 import net.byteboost.junipy.model.UserProfile;
 
 public class RegisterRequest {
-    private String username;
     private String email;
     private String password;
     private String confirmPassword;
     private UserProfile userProfile;
-
-    public String getUsername() {
-        return username;
-    }
-    public void setUsername(String username) {
-        this.username = username;
-    }
 
     public String getEmail() {
         return email;

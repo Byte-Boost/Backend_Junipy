@@ -22,7 +22,6 @@ public class AdminInitializer {
 
             if (userRepo.findByEmail(adminEmail) == null) {
                 User admin = new User();
-                admin.setUsername("admin");
                 admin.setEmail(adminEmail);
                 admin.setPassword(encoder.encode(adminPass));
                 admin.setRole(RoleEnum.ADMIN);

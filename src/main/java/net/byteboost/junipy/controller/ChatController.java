@@ -28,8 +28,12 @@ public class ChatController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Chat>> all() {return ResponseEntity.ok(chatService.getAllChats());}
-
+    public ResponseEntity<List<Chat>> all(@RequestHeader("Authorization") String authHeader) {
+        String jwtToken = authHeader.replace("Bearer ", "");
+        String userId = jwtUtils.extractUserId(jwtToken);
+        return ResponseEntity.ok(chatService.getChatsByUserId(userId));
+    }
+    
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> delete(@PathVariable String id) {
         chatService.deleteChat(id); 

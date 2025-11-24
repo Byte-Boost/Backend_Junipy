@@ -32,7 +32,7 @@ public class AuthController {
         if (!req.getPassword().equals(req.getConfirmPassword()))
             return ResponseEntity.badRequest().body("Passwords do not match");
 
-        User user = new User(req.getUsername(), req.getEmail(), passwordEncoder.encode(req.getPassword()));
+        User user = new User(req.getEmail(), passwordEncoder.encode(req.getPassword()));
         userService.createUser(user);
         userService.upsertUserProfile(user.getId(), req.getUserProfile());
         return ResponseEntity.ok("Registered");

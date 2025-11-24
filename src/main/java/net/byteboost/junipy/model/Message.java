@@ -9,12 +9,12 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Message {
     @Id
     private String id;
-    private String senderId;
+    private String sentBy;
     private String message;
     private String timestamp;
 
-    public Message(String senderId, String message) {
-        this.senderId = senderId;
+    public Message(String sentBy, String message) {
+        this.sentBy = sentBy;
         this.message = message;
         this.timestamp = new Date(System.currentTimeMillis()).toString();
     }
@@ -24,11 +24,11 @@ public class Message {
     public void setId(String id) {
         this.id = id;
     }
-    public String getSenderId() {
-        return senderId;
+    public String getSentBy() {
+        return sentBy;
     }
-    public void setSenderId(String senderId) {
-        this.senderId = senderId;
+    public void setSentBy(String sentBy) {
+        this.sentBy = sentBy;
     }
     public String getMessage() {
         return message;

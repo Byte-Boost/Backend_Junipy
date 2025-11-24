@@ -8,7 +8,7 @@ import net.byteboost.junipy.model.Message;
 public interface IMessageService {
     List<Message> getAllMessages();
     Optional<Message> getMessageById(String id);
-    Message createMessage(String userId, String message);
+    Message createMessage(String sentBy, String message);
     Message updateMessage(String id, Message message);
     void deleteMessage(String id);
 }
