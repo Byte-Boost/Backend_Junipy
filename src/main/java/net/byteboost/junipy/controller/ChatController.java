@@ -1,54 +1,64 @@
 package net.byteboost.junipy.controller;
 
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
+import java.util.List;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import org.springframework.messaging.handler.annotation.MessageMapping;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.stereotype.Controller;
+import net.byteboost.junipy.model.Chat;
+import net.byteboost.junipy.security.JwtUtil;
+import net.byteboost.junipy.service.IChatService;
 
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-
-import io.github.cdimascio.dotenv.Dotenv;
-import net.byteboost.junipy.dto.ChatMessage;
-
-
-@Controller
+@RestController
+@RequestMapping("/chat")
 public class ChatController {
-    private final String aiUrl = Dotenv.load().get("AI_SERVER_URL");
-    private final HttpClient client = HttpClient.newHttpClient();
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private JwtUtil jwtUtils;
+    private final IChatService chatService;
 
-    @MessageMapping("/chat")
-    @SendTo("/topic/chat")
-    public ChatMessage handleChat(ChatMessage message) {
-        try {
-            ObjectNode node = objectMapper.createObjectNode();
-            node.put("prompt", message.getMessage());
-            String body = objectMapper.writeValueAsString(node);
+    public ChatController(IChatService chatService, JwtUtil jwtUtils) {
+        this.chatService = chatService;
+        this.jwtUtils = jwtUtils;
+    }
 
-        HttpRequest request = HttpRequest.newBuilder()
-            .uri(URI.create(aiUrl + "/chat"))
-            .version(HttpClient.Version.HTTP_1_1) 
-            .POST(HttpRequest.BodyPublishers.ofString(body))
-            .header("Content-Type", "application/json")
-            .build();
-            
-            HttpResponse<String> httpResponse = client.send(request, HttpResponse.BodyHandlers.ofString());
-            
-            String responseBody = httpResponse.body();
-            
-            JsonNode json = objectMapper.readTree(responseBody);
+    @GetMapping
+    public ResponseEntity<List<Chat>> all(@RequestHeader("Authorization") String authHeader) {
+        String jwtToken = authHeader.replace("Bearer ", "");
+        String userId = jwtUtils.extractUserId(jwtToken);
+        return ResponseEntity.ok(chatService.getChatsByUserId(userId));
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> delete(@PathVariable String id) {
+        chatService.deleteChat(id); 
+        return ResponseEntity.noContent().build();
+    }
 
-            String reply = json.has("response") ? json.get("response").asText() : "Error contacting Junipy verify your internet connection";
-            return new ChatMessage("assistant", reply, null);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new ChatMessage("assistant", null, "Error contacting Junipy: " + e.getMessage());
-        }
+    @PostMapping
+    public ResponseEntity<Chat> postChat(@RequestHeader("Authorization") String authHeader) {
+        String jwtToken = authHeader.replace("Bearer ", "");
+        String userId = jwtUtils.extractUserId(jwtToken);
+        Chat newChat = chatService.createChat(userId);
+        return ResponseEntity.status(201).body(newChat);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<Chat> updateChat(@PathVariable String id, @RequestBody Chat chat) {
+        Chat updatedChat = chatService.updateChat(id, chat);
+        return ResponseEntity.ok(updatedChat);
+    }
+
+    @GetMapping("/user-chats")
+    public ResponseEntity<List<Chat>> getChatsByUserId(@RequestHeader("Authorization") String authHeader) {
+        String jwtToken = authHeader.replace("Bearer ", "");
+        String userId = jwtUtils.extractUserId(jwtToken);
+        List<Chat> chats = chatService.getChatsByUserId(userId);
+        return ResponseEntity.ok(chats);
     }
 }
