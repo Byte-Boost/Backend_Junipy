@@ -38,24 +38,14 @@ public class ChatWebSocketController {
     @MessageMapping("/chat/{chatId}/send")
     public void sendMessage(@DestinationVariable String chatId,
                             @Payload ChatMessage chatMessage,
-                            Principal principal,
-                        SimpMessageHeaderAccessor headerAccessor) {
+                            Principal principal) {
 
         String userId = principal != null ? principal.getName() : null;
 
         Message saved = messageService.createMessage("user", chatMessage.getMessage());
         
-        String authorizationHeader = headerAccessor.getNativeHeader("Authorization") != null ?
-            ((java.util.List<String>) headerAccessor.getNativeHeader("Authorization")).get(0) : null;
-        System.out.println("Authorization Header: " + authorizationHeader);
-            String token = null;
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            token = authorizationHeader.substring(7); // Removes the "Bearer " part
-            System.out.println("Extracted token: " + token);
+        System.out.println("Authorization Header: " + chatMessage.getToken());
 
-        } else {
-            System.out.println("No Bearer token found.");
-        }
 
         Optional<Chat> opt = chatService.getChatById(chatId);
         if (opt.isPresent()) {
@@ -64,12 +54,12 @@ public class ChatWebSocketController {
             chatService.updateChat(chatId, chat);
         }
 
-        ChatMessage outbound = new ChatMessage("user", saved.getMessage(), null);
+        ChatMessage outbound = new ChatMessage("user", saved.getMessage(), null, chatMessage.getToken());
         messagingTemplate.convertAndSend("/topic/chat/" + chatId, outbound);
 
         String role = chatMessage.getRole();
         if (role == null || "user".equalsIgnoreCase(role)) {
-            String reply = aiService.getAiResponse(chatMessage.getMessage(), chatId, token);
+            String reply = aiService.getAiResponse(chatMessage.getMessage(), chatId, chatMessage.getToken());
             if (reply != null) {
                 Message assistantSaved = messageService.createMessage("assistant", reply);
                 if (opt.isPresent()) {
@@ -77,10 +67,10 @@ public class ChatWebSocketController {
                     chat.getMessages().add(assistantSaved);
                     chatService.updateChat(chatId, chat);
                 }
-                ChatMessage assistantOutbound = new ChatMessage("assistant", reply, null);
+                ChatMessage assistantOutbound = new ChatMessage("assistant", reply, null, chatMessage.getToken());
                 messagingTemplate.convertAndSend("/topic/chat/" + chatId, assistantOutbound);
             } else {
-                ChatMessage err = new ChatMessage("assistant", null, "Error contacting AI service");
+                ChatMessage err = new ChatMessage("assistant", null, "Error contacting AI service", chatMessage.getToken());
                 messagingTemplate.convertAndSend("/topic/chat/" + chatId, err);
             }
         }
