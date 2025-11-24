@@ -5,6 +5,7 @@ import java.util.Optional;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import java.security.Principal;
@@ -37,11 +38,24 @@ public class ChatWebSocketController {
     @MessageMapping("/chat/{chatId}/send")
     public void sendMessage(@DestinationVariable String chatId,
                             @Payload ChatMessage chatMessage,
-                            Principal principal) {
+                            Principal principal,
+                        SimpMessageHeaderAccessor headerAccessor) {
 
         String userId = principal != null ? principal.getName() : null;
 
         Message saved = messageService.createMessage("user", chatMessage.getMessage());
+        
+        String authorizationHeader = headerAccessor.getNativeHeader("Authorization") != null ?
+            ((java.util.List<String>) headerAccessor.getNativeHeader("Authorization")).get(0) : null;
+        System.out.println("Authorization Header: " + authorizationHeader);
+            String token = null;
+        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+            token = authorizationHeader.substring(7); // Removes the "Bearer " part
+            System.out.println("Extracted token: " + token);
+
+        } else {
+            System.out.println("No Bearer token found.");
+        }
 
         Optional<Chat> opt = chatService.getChatById(chatId);
         if (opt.isPresent()) {
@@ -55,7 +69,7 @@ public class ChatWebSocketController {
 
         String role = chatMessage.getRole();
         if (role == null || "user".equalsIgnoreCase(role)) {
-            String reply = aiService.getAiResponse(chatMessage.getMessage(), chatId);
+            String reply = aiService.getAiResponse(chatMessage.getMessage(), chatId, token);
             if (reply != null) {
                 Message assistantSaved = messageService.createMessage("assistant", reply);
                 if (opt.isPresent()) {
