@@ -16,6 +16,8 @@ public class UserProfile {
     @Indexed(unique = true)
     private String userId;
 
+    @NotBlank 
+    private String name;
     @NotBlank
     private String birthDate;
     @NotBlank
@@ -24,7 +26,10 @@ public class UserProfile {
     private String occupation;
     @NotBlank
     private String consultationReason;
-
+    @NotBlank 
+    private Integer weight;
+    @NotBlank
+    private Integer height;
     @NotBlank
     private List<String> healthConditions;
     @NotBlank
