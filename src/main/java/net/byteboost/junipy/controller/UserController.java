@@ -54,6 +54,8 @@ public class UserController {
     public ResponseEntity<Void> upsertProfileData(@RequestHeader("Authorization") String authHeader, @RequestBody UserProfile profile) {
         String jwtoken = authHeader.replace("Bearer ", "");
         String userId = jwtUtils.extractUserId(jwtoken);
+        User user = userService.getUserById(userId);
+        profile.setEmail(user.getEmail());
         userService.upsertUserProfile(userId, profile);
         return ResponseEntity.status(201).build(); 
     }
