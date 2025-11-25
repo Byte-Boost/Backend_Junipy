@@ -7,6 +7,7 @@ import net.byteboost.junipy.repository.UserProfileRepository;
 import net.byteboost.junipy.repository.UserRepository;
 import org.springframework.stereotype.Service;
 
+import java.lang.reflect.Field;
 import java.util.List;
 
 @Service
@@ -68,11 +69,25 @@ public class UserService implements IUserService {
     @Override
     public UserProfile upsertUserProfile(String userId, UserProfile profile){
         UserProfile existingProfile = userProfileRepository.findByUserId(userId);
-        if(existingProfile != null){
-            profile.setId(existingProfile.getId());
+        if(existingProfile == null){
+            return userProfileRepository.save(profile);
+        } else {
+            applyPatch(profile, existingProfile);
+            return userProfileRepository.save(existingProfile);
         }
-        profile.setUserId(userId);
-        return userProfileRepository.save(profile);
     }
+
+    public static void applyPatch(Object patch, Object target) {
+    for (Field field : patch.getClass().getDeclaredFields()) {
+        field.setAccessible(true);
+        try {
+            Object value = field.get(patch);
+            if (value != null) {
+                field.set(target, value);
+            }
+        } catch (IllegalAccessException ignored) {}
+    }
+}
+
 
 }
