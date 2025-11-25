@@ -70,6 +70,7 @@ public class UserService implements IUserService {
     public UserProfile upsertUserProfile(String userId, UserProfile profile){
         UserProfile existingProfile = userProfileRepository.findByUserId(userId);
         if(existingProfile == null){
+            profile.setUserId(userId);
             return userProfileRepository.save(profile);
         } else {
             applyPatch(profile, existingProfile);

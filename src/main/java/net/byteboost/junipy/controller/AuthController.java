@@ -34,7 +34,8 @@ public class AuthController {
 
         User user = new User(req.getEmail(), passwordEncoder.encode(req.getPassword()));
         userService.createUser(user);
-        userService.upsertUserProfile(user.getId(), req.getUserProfile());
+        if(req.getUserProfile() != null)
+            userService.upsertUserProfile(user.getId(), req.getUserProfile());
         return ResponseEntity.ok("Registered");
     }
 
